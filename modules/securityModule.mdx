@@ -1,0 +1,99 @@
+## Security Module Roles:
+
+1.  **Super Admin :** He is the creator of the project. It is the role with the highest administrative levels, it manages all the important part of the platform.
+2.  **Admin :** It is the user who purchases the membership plan to access the paid modules and functionalities.
+3.  **User :** (We currently do not use this role) In certain SaaS, Administrators may have registered users who access certain resources managed by this user who purchased the membership plan..
+    
+## Main actors of the security module:
+1.  **Module :** It is a section or functionality for any of the roles. For example. We have a module for the SuperAdmin role called SettingModule that allows this role to edit the main platform settings such as changing Stripe keys.
+2.  **Scope :** The scope is simply the type of module, or rather the area where it is displayed. The scopes are currently the same roles... User, Admin and SuperAdmin... A module with the SuperAdmin scope means that only SuperAdmin users can access them.
+3.  **Permission :** Permissions are the actions that can be performed on a module. For example, we have a module called "Users" that has the "SuperAdmin" scope. This module has the following permissions: "Create", "Read", "Update" and "Delete". This means that the SuperAdmin organizations or users can create, read, update and delete users.
+4.  **Organization :** Organizations are an effective way to organize users. For example, if we have a team dedicated to sales, the ideal is to create an organization "SuperAdminSales" and give it access to the Billing and Users module. In this way, the leader of this team can add users to the organization quickly and avoids the work of manually assigning their permissions user by user. We can create the organizations we want and assign them the specific permissions we need.
+ 
+![securityModule](https://ik.imagekit.io/cluzstudio/01-cluzstudio/tuto%20acl%202_r3ygjm2nr.png?updatedAt=1704132772327)
+## How does it work:
+We do one validation on the frontend and another on the backend, this way the system is robust from end to end.
+
+### Frontend:
+
+1.  **Layout level check :**  So as not to have to do a page-by-page validation of permissions. At the highest level of each role we do the validation to check that said user can access the page they are trying to open.
+
+```javascript {11}
+const SuperAdminRoot = () => { 
+  const { organization, isLoaded } = useOrganization();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!organization) {
+      navigate("/");
+    } else if (
+      !hasSuperAdminPermission(organization.publicMetadata?.permissions as string[])) {
+      navigate("/403");
+    }
+  }, [isLoaded, organization]);
+
+  return (
+    <div> ...
+```
+ **hasSuperAdminPermission** : checks if the active organization has any role that contains the 'superAdmin' scope
+
+ 2.  **Module level check:**  If the organization has at least one superAdmin permission, it is shown access to the superAdmin dashboard, however, it may only have access to one of the modules of that scope, therefore, we must validate in each superAdmin module whether it has permission to read that module.
+
+```javascript {2,10-16}
+const SuperAdminSubscriptionPage = () => {
+  const { hasModulePermission } = useSuperAdmin("superAdmin:billing:read");
+
+  const { data: subscriptions, loading } = useQuery(GET_ALL_SUBSCRIPTIONS);
+
+  if (loading) {
+    return <SkeltonTable count={10} />;
+  }
+
+  if (!hasModulePermission) {
+    return (
+      <div className="">
+        <ForbiddenPage />
+      </div>
+    );
+  }
+
+  return (
+    <div>...
+```
+**useSuperAdmin**: checks if the active organization has the permission to read the module
+
+### Backend:
+ 
+
+```javascript {8}
+const resolvers = {
+  Query: {
+    getSupportTickets: async (
+      root: any,
+      args: { id: number },
+      context: MyContext
+    ) => {
+      checkPermission(context.user.permissions, "superAdmin:support:read");
+
+      return await prisma.supportTicket.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    },
+```
+
+**checkPermission**: checks if the active user has the permission to read (or any other action) the module.
+
+```javascript {3}
+if (
+        ticket.userId == MyContext.user.id ||
+        hasPermission(MyContext.user.permissions, "superAdmin:support:read")
+      ) {
+        return ticket;
+      }
+```
+
+**hasPermission**: checks if the active user has the permission to read (or any other action) the module.

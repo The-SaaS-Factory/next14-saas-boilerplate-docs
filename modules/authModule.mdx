@@ -1,0 +1,112 @@
+import { Callout } from 'nextra/components'
+
+## Main actors of the auth module:
+1.  **The app in Clerk:** For our platform we must create and configure our application at https://clerk.com/. We can easily add several social providers in addition to all the other clerk advantages that we will see. Clerk gives us a key that we must place in the environment variables of our frontend and backend.
+2.  **Authentication and registration components :** They are React components that we place in our code that render the great clerk modules. Everything the user does in these modules goes to the clerk backend. After the user authenticates, clerk manages the session for us.
+
+![authModule](https://ik.imagekit.io/cluzstudio/01-cluzstudio/Captura%20de%20pantalla%202024-01-01%20162305_xo92eGAoK.png?updatedAt=1704137021211)
+
+3. **Webhook :** When the user interacts with the clerk components in our forntend. Clerk from behind sends us that information through a webhook. With this information we synchronize the user's data with our database
+    
+ ```javascript filename="backend/src/facades/clerkFacade.ts" copy
+   const handleEventWebhook = async (evt: WebhookEvent) => {
+      switch (evt.type) {
+         case "user.created":
+            await handleUserCreated(evt.data, "webhook");
+            break;
+         case "user.updated":
+            await handleUserUpdated(evt.data, "webhook");
+            break;
+         case "organization.created":
+            await handleCreateOrganization(evt.data);
+            break;
+         case "organization.updated":
+            await handleOrganizationUpdated(evt.data);
+            break;
+      }
+   }
+ ```
+
+<Callout type="info" emoji="ℹ️">
+  The webhook is nothing more than a POST route in our backedn which we configure in the webhook section of the clerk dashboard
+</Callout>
+
+## How to identify the authenticated user in the backend?
+
+### In the frontend:
+Once the user is authenticated and clerk allows them to continue through our frontend. Clerk saves a session token which we send to the backend through apollo client
+
+```javascript filename="frontend/src/Main.tsx" {2,11,17}
+  export const ApolloProviderWrapper = ({ children }: PropsWithChildren) => {
+  const { getToken } = useAuth(); //Clerk Hook
+
+  const wsLink = new GraphQLWsLink(
+    createClient({
+      url: serverWSURL,
+    })
+  );
+
+  const client = useMemo(() => {
+    const authMiddleware = setContext(async (_operation, { headers }) => {
+      const token = await getToken();
+
+      return {
+        headers: {
+          ...headers,
+          authorization: `Bearer ${token}`,
+        },
+      };
+    });
+```
+
+
+### In the backend:
+
+In the backend we have a middleware that validates the token and returns the user data
+
+```javascript filename="backend/src/index.ts"  {3,6}
+const authMiddleware = async (req, res, next) => {
+  try {
+    const bearerToken = req.headers.authorization || "";
+    const token = bearerToken.replace("Bearer ", "");
+    const decodedToken: any = jwt.decode(token);
+    const user = await getUser(decodedToken);
+    req.user = user;
+
+    next();
+  } catch (error) {
+    console.error("Error on authMiddleware", error);
+    req.user = null;
+    next();
+  }
+};
+```
+<Callout type="info" emoji="ℹ️">
+  We recommend adding a cache system so you don't have to call getUser on every request
+</Callout>
+
+
+Add to the context of the apollo server the user data and thus have the user information in all the graphql files where we manage the wueries and mutations
+```javascript filename="backend/src/index.ts"   {6,7,17}
+  app.use(
+  "/graphql",
+  cors<cors.CorsRequest>(),
+  json(),
+  expressMiddleware(server, {
+    context: async ({ req }: { req: any }) => {
+      const user = req.user;
+      if (!user) {
+        throw new GraphQLError("User is not authenticated", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+            http: { status: 401 },
+          },
+        });
+      }
+
+      return { user };
+    },
+  })
+);
+
+```

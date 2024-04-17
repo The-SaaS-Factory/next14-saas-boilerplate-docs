@@ -1,0 +1,11 @@
+{
+  "index": "    Get Started",
+  "projectStructure": "Project Structure",
+  "installation": "Install the boilerplate",
+  "contact": {
+    "title": "Contact ↗",
+    "type": "page",
+    "href": "https://cluzstudio.com/#contact",
+    "newWindow": true
+  }
+}

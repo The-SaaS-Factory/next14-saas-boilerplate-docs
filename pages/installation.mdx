@@ -1,0 +1,104 @@
+import { Steps } from 'nextra/components'
+import { Callout } from 'nextra/components'
+
+<Steps>
+### Step 1
+ 
+Download, fork or clone
+[the repo](https://github.com/The-SaaS-Factory/next-14-saas-boilerplate)
+  and install dependencies.
+ 
+```bash
+git clone https://github.com/The-SaaS-Factory/next-14-saas-boilerplate.git
+```
+ 
+```bash
+cd next-14-saas-boilerplate
+```
+```bash
+npm install
+```
+### Step 2
+Create a MySQL DB in your local environment (Xampp, Wamp, Laragon, etc).
+
+### Step 3
+Copy the `.env.example` file to `.env` and update the environment variables accordingly.
+ 
+ <Callout type="warning" emoji="⚠️">
+  The DATABASE_URL variable  is the connection string to your MySQL DB.
+  Example: `mysql://root:root@localhost:3306/saas-boilerplate`
+</Callout>
+
+ <Callout type="warning" emoji="⚠️">
+   Clerk is already installed in the boilerplate. Only you need update the `VITE_CLERK_PUBLISHABLE_KEY` variable in the `.env` file.
+   https://clerk.com/docs/quickstarts/react#set-environment-keys
+</Callout>
+
+
+### Step 4
+Run the prisma commands to push the schema to the database and generate the client.
+ 
+```bash
+npx prisma db push
+```
+### Step 5
+Put some data in the database by running the seed command. (Recommended)
+  
+Run the seed 
+```bash
+npx prisma db seed  
+```
+
+
+### Step 6
+Run the app in the development mode.
+ 
+```bash
+npm run dev --turbo
+```
+ 
+
+### Step 7
+Configure Clerk
+  
+Create an new application in [https://dashboard.clerk.com/](https://dashboard.clerk.com/) 
+ 
+ - Update in the .env file the "CLERK_SECRET_KEY", "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",  
+ - Create an webhook and update the "CLERK_WEBHOOK_SECRET" in the .env file
+ 
+ <Callout type="warning" emoji="⚠️">
+   For clerk to send the information to your local project(Through webhook) and synchronize the database, you must expose your localhost with services such as ngrok or cloudflare
+</Callout>
+
+ - Update the session token, go to the clerk dashboard and update the session token in the Customize session token section, put this
+```json
+{
+	"metadata": "{{user.public_metadata}}"
+}
+```
+<Callout type="info" emoji="⚠️">
+   This is necessary for the User onboarding to work correctly
+</Callout>
+
+ 
+### Step 8
+
+Create the super admin user: 
+ In https://localhost:3000  create a new user
+
+ In Clerk
+- Go to https://dashboard.clerk.com/ and access to your Clerk App
+- Edit the user and put in publicMetadata this: 
+```json
+{
+  "isSuperAdmin": true,
+ 	"permissions": [
+		"superAdmin:totalAccess"
+	],
+}
+```
+  <Callout type="info" emoji="⚠️">
+  For it to work we must have run seed or manually placed the permissions in the permissions table of our database
+</Callout>
+ </Steps>
+ 
