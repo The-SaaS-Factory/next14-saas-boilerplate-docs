@@ -1,1 +1,45 @@
+## NewForm: Build Forms quickly
+This component receives an array of objects that identify the fields that the form will have, inside it uses useForm to collect all the information and send it to the server action that we pass as a parameter. But nothing, it is very simple, powerful and fast
 
+Example
+
+```js
+ const fields: Field[] = [
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      hasLanguageSupport: true,
+      required: true,
+    },
+    ... // Others fields
+  ];
+
+  return (
+    <>
+      <NewForm
+        values={[]}
+        info={formInfo}
+        fields={fields}
+        modelToUpdate={null}
+        onSubmit={upsertPlan} //Server Action
+      />
+    </>
+  );
+```
+### Field type
+The array of fields that the form receives has the following parameters
+```json
+ {
+  name: string;
+  label: string;
+  type: string;
+  slug?: string;
+  numberStep?: string;
+  note?: string;
+  forceInteger?: boolean;
+  required: boolean;
+  options?: FieldSelectOption[];
+  hasLanguageSupport?: boolean;
+}
+```
