@@ -1,1 +1,5 @@
-
+##Check if the logged in user is superAdmin
+```js
+  const { isSuperAdmin } = useSuperAdmin();
+```
+Our SaaS administration is not going to use the Clerk role system, because for example, if we have a special role in our Technical Support administration, that role would be available to all tenants of the system and we do not want that. Therefore, this hook is able to validate if the logged in user has permission to access the requested resource... This at the client level
