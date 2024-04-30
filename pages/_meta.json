@@ -4,6 +4,7 @@
   "installation": "Install the Boilerplate",
   "guides": "Guides",
   "components": "Components",
+   "hooks": "Custom Hooks",
   "contact": {
     "title": "Contact ↗",
     "type": "page",
