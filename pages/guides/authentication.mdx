@@ -17,7 +17,6 @@ We use clerk as an authentication provider, due to its versatility, functionalit
 Now, the user is logged in to the browser. All good, now how do we recognize the user in the servers actions (Our backend) ?
 
 ```
-'use server'
 export const SomeAction = async () => {
   const userClerk = auth();
   const { userId } = await getUser(userClerk);
