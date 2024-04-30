@@ -2,8 +2,8 @@
   "index": "Get Started",
   "projectStructure": "Project Structure",
   "installation": "Install the boilerplate",
-  "guides": "Guides",
-   "contact": {
+  "guides": "Guide",
+  "contact": {
     "title": "Contact ↗",
     "type": "page",
     "href": "https://cluzstudio.com/#contact",
