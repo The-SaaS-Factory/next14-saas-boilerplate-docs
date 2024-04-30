@@ -18,11 +18,9 @@ Now, the user is logged in to the browser. All good, now how do we recognize the
 
 ```js
     "use server"
-    ...
-    const userClerk = auth();
+     const userClerk = auth();
     const { userId } = await getUser(userClerk);
-    ....
-```
+ ```
 That is, we obtain the instance of the connected Clerk user and send it to the getUser method. What this method does is that it searches our User Table for the first record with the externalId of the clerk instance and returns several things from that instance. user in our database as the {userId}
 
 ## Authenticating Organization or Personal Profile?
