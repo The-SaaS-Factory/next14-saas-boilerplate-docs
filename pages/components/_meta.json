@@ -1,4 +1,5 @@
 {
   "newForm": "<NewForm />",
   "pageName": "<PageName />"
+   "superAdminMiddleware": "<SuperAdminMiddleware />"
 }
