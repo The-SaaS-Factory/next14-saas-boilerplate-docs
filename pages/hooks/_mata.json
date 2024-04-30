@@ -1,4 +1,4 @@
 {
-  "useSuperAdmin": "useSuperAdmin()",
-  "useMembership": "useMembership()"
+  "useSuperAdmin": "use Super Admin()",
+  "useMembership": "use Membership()"
 }
