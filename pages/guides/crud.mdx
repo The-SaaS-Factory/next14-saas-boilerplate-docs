@@ -9,9 +9,10 @@ src/app/[locale]/(superAdmin)/admin/(billingModule)/billing/plans/plans
 ![enter image description here](https://ik.imagekit.io/cluzstudio/01-cluzstudio/image_qUWDtYOwL.png?updatedAt=1714488855515)
 #### List
 In the UI folder we have a component that lists the plans
-
+```js 
     const BillingPlansList = async () => {
      const { data } = await getAllPlans(); //getAllPlans is a server action
+```
 We import this component in the page.tsx of our route folder
 #### Create
 To create and update we will use a single **UpsertPlan** file located in the UI folder since we are going to use it in /add and /edit two paths and two different files
