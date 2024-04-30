@@ -27,7 +27,17 @@ Example
     </>
   );
 ```
-### Field type
+### values 
+They are the values ​​of the model that we are going to update. For example, if we are going to update one of our membership plans... We must first obtain all the data of that plan with its id and send that array to newForm through the values ​​parameter. With this, NewForm will fill in all the fields
+
+<Callout type="warning" emoji="⚠️">
+   The name parameter of the fields must match the column of the table in question
+</Callout>
+
+### info
+It is the header for the form, completely optional
+
+### field 
 The array of fields that the form receives has the following parameters
 ```json
  {
@@ -39,7 +49,44 @@ The array of fields that the form receives has the following parameters
   note?: string;
   forceInteger?: boolean;
   required: boolean;
-  options?: FieldSelectOption[];
+  options?: FieldSelectOption[]; // [optionName, optionValue]
   hasLanguageSupport?: boolean;
 }
 ```
+Supported Field Types: Text, Slug, Textarea, number, gallery, image, password, date, toggle, select, searchselect, multiselect, list , mapSelector
+
+### modelToUpdate
+When we are going to update, we must send part of the values ​​that we are going to fill in the form, also the id of the model that we are going to update. In this example it would be the ID of the plan that we are going to update
+
+### onSubmit 
+Server action prepared to work with the newForm
+So that the information that is sent to the server action that we pass as a parameter works both to create and to update, it must follow the following scheme
+
+Example with Plan Membership Model
+```js
+export const upsertPlan = async ({
+  modelId,
+  payload,
+}: {
+  modelId?: number;
+  payload: Prisma.PlanCreateInput | Prisma.PlanUpdateInput;
+}) => {
+.....
+
+ await prisma.plan.upsert({
+      where: {
+        id: modelId ? modelId : 0,
+      },
+      update: {
+        name: payload.name,
+        description: payload.description,
+        status: payload.status,
+      },
+      create: {
+        name: payload.name as string,
+        description: payload.description as string,
+        status: payload.status as string,
+      },
+    });
+```
+
