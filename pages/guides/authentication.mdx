@@ -2,9 +2,7 @@
 
 ## Auth Provider 
 We use clerk as an authentication provider, due to its versatility, functionality and practicality. You can learn more about clerk here [https://clerk.com/](https://clerk.com/)
-
  
-
 ## Authentication flow
 ![enter image description here](https://ik.imagekit.io/cluzstudio/saasfactory/clerk%201_w3G0rnLHb?updatedAt=1714474418006)
  
@@ -18,11 +16,13 @@ We use clerk as an authentication provider, due to its versatility, functionalit
 ## Authentication flow in the backend
 Now, the user is logged in to the browser. All good, now how do we recognize the user in the servers actions (Our backend) ?
 
+```js
     "use server"
     ...
     const userClerk = auth();
     const { userId } = await getUser(userClerk);
     ....
+```
 That is, we obtain the instance of the connected Clerk user and send it to the getUser method. What this method does is that it searches our User Table for the first record with the externalId of the clerk instance and returns several things from that instance. user in our database as the {userId}
 
 ## Authenticating Organization or Personal Profile?
