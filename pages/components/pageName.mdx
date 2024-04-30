@@ -1,1 +1,23 @@
 ## Standardize all the headers of our administration panels
+![](https://ik.imagekit.io/cluzstudio/01-cluzstudio/image_OAE6NS679.png?updatedAt=1714503543952)
+
+```js
+  <PageName
+      name={t("plans")}
+      isSubPage={true}
+      breadcrumbs={[
+        {
+          name: "Dashboard",
+          href: "/admin",
+        },
+        {
+          name: "Billing",
+          href: "/admin/billing/plans/plans",
+        },
+      ]}
+      btn1={{
+         name: t("addPlan"),
+         href: "plans/add",
+      }}
+    />
+```
