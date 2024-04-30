@@ -26,7 +26,7 @@ export const SomeAction = async () => {
 ```
 
 
-That is, we obtain the instance of the connected Clerk user and send it to the getUser method. What this method does is that it searches our User Table for the first record with the externalId of the clerk instance and returns several things from that instance. user in our database as the '{userId}'
+That is, we obtain the instance of the connected Clerk user and send it to the getUser method. What this method does is that it searches our User Table for the first record with the externalId of the clerk instance and returns several things from that instance. user in our database as the userId
 
 ## Authenticating Organization or Personal Profile?
 Our boilerplate looks at either an organization or a user. If a user registers for the first time, the webhook is sent and we save it in the user table with the extarnal ID. If that same user creates an organization, the same webhook is sent and we save another record in our user table with the externalId of that organization...
