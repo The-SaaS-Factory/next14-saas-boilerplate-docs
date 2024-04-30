@@ -1,4 +1,5 @@
 {
    "authentication" : "Authentication",
-   "permissions": "Roles and Permissions"
+   "permissions": "Roles and Permissions",
+   "crud": "CRUD",
 }
