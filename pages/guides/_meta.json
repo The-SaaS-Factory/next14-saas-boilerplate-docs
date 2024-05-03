@@ -1,5 +1,6 @@
 {
    "authentication" : "Authentication",
    "permissions": "Roles and Permissions",
-   "crud": "CRUD"
+   "crud": "CRUD",
+   "billing": "Billing and subscriptions"
 }
