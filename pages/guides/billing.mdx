@@ -23,7 +23,11 @@ The page showing the plans available for our tenants (Organizations) is rendered
   const paymentMethods = await getPaymentMethods();
 ```
 
-With these servicodr actions we obtain everything necessary to display the page with the available plans, our currencies defined in the administrative settings and the payment methods
+With these server actions we obtain everything necessary to display the page with the available plans, our currencies defined in the administrative settings and the payment methods
+#### Connect our plans with Stripe
+For Stripe to recognize prices and plans, we need to connect the plan via API to Stripe and then connect each price we create for that plan. For example, Plan A can have 2 prices... $5 monthly and $20 annually
+![](https://ik.imagekit.io/cluzstudio/image_JN9SsRV_s.png?updatedAt=1714994320618)
+
 #### Shopping with Stripe
 If we have in the administrative settings in the super admin panel, Stripe activated and added in the payment methods. The user will be presented with the Pay With Stripe option when they click on Buy Plan
 This is where our custom hook usePaymentMethod comes into the picture.
