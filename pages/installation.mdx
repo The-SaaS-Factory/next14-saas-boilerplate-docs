@@ -29,12 +29,7 @@ Copy the `.env.example` file to `.env` and update the environment variables acco
   Example: `mysql://root:root@localhost:3306/saas-boilerplate`
 </Callout>
 
- <Callout type="warning" emoji="⚠️">
-   Clerk is already installed in the boilerplate. Only you need update the `VITE_CLERK_PUBLISHABLE_KEY` variable in the `.env` file.
-   https://clerk.com/docs/quickstarts/react#set-environment-keys
-</Callout>
-
-
+ 
 ### Step 4
 Run the prisma commands to push the schema to the database and generate the client.
  
@@ -68,7 +63,11 @@ Create an new application in [https://dashboard.clerk.com/](https://dashboard.cl
  - Enable the Organizations option in the clerk's organizations panel
  
  <Callout type="warning" emoji="⚠️">
-   For clerk to send the information to your local project(Through webhook) and synchronize the database, you must expose your localhost with services such as ngrok or cloudflare
+   For Clerk to send the information to your local project(Through webhook) and synchronize the database, you must expose your localhost with services such as ngrok or cloudflare
+</Callout>
+
+ <Callout type="warning" emoji="⚠️">
+   Whatever tunneling service you use to expose your local host, it must end with this path: `/en/api/clerk`
 </Callout>
 
  - Update the session token, go to the clerk dashboard and update the session token in the Customize session token section, put this
@@ -84,7 +83,7 @@ Create an new application in [https://dashboard.clerk.com/](https://dashboard.cl
  
 ### Step 8
 
-Create the super admin user: 
+Create the Super Admin user: 
  In https://localhost:3000  create a new user
 
  In Clerk
@@ -93,9 +92,7 @@ Create the super admin user:
 ```json
 {
   "isSuperAdmin": true,
- 	"permissions": [
-		"superAdmin:totalAccess"
-	],
+  "permissions": ["superAdmin:totalAccess"]
 }
 ```
   <Callout type="info" emoji="⚠️">

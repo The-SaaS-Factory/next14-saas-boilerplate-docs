@@ -1,0 +1,52 @@
+## Protected access for super admin users
+We place this Middelware at the top of the /admin route so that all routes with this prefix go through this filter
+```js {15-17}
+import SuperAdminLayout from "@/components/layouts/SuperAdminLayout";
+import SuperAdminMiddleware from "@/components/layouts/SuperAdminMiddleware";
+import { SignIn, SignedIn, SignedOut } from "@clerk/nextjs";
+
+const AdminRoot = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <main>
+      <SignedOut>
+        <div className="flex justify-center py-24">
+          <SignIn />
+        </div>
+      </SignedOut>
+      <SignedIn>
+        <div>
+          <SuperAdminMiddleware>
+            <SuperAdminLayout>{children}</SuperAdminLayout>
+          </SuperAdminMiddleware>
+        </div>
+      </SignedIn>
+    </main>
+  );
+};
+export default AdminRoot;
+```
+
+```js {12}
+"use client";
+import useSuperAdmin from "@/app/hooks/useSuperAdmin";
+import { ReactNode } from "react";
+import ForbiddenPage from "./errors/ForbiddenPage";
+import PageLoader from "../ui/loaders/PageLoader";
+
+export default function SuperAdminMiddleware({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const { isSuperAdmin, loadingIsSuperAdmin } = useSuperAdmin();
+
+  if (loadingIsSuperAdmin) {
+    return (
+      <div className="p-14">
+        <PageLoader />
+      </div>
+    );
+  }
+  return <>{isSuperAdmin ? children : <ForbiddenPage />}</>;
+}
+```

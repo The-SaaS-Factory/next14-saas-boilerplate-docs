@@ -13,6 +13,11 @@ const config: DocsThemeConfig = {
   footer: {
     text: 'The SaaS Factory Boilerplate Docs - Next 14 Version ',
   },
+  useNextSeoProps() {
+    return {
+      titleTemplate: '%s – The SaaS Factory'
+    }
+  }
 }
 
  

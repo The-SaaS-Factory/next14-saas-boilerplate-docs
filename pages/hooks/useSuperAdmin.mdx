@@ -1,0 +1,20 @@
+## Check if the logged in user is superAdmin
+```js
+  const { isSuperAdmin } = useSuperAdmin();
+```
+Our SaaS administration is not going to use the Clerk role system, because for example, if we have a special role in our Technical Support administration, that role would be available to all tenants of the system and we do not want that. Therefore, this hook is able to validate if the logged in user has permission to access the requested resource... This at the client level
+
+```js
+ const { isSuperAdmin } = useSuperAdmin();
+ //AdminHeader
+ {isSuperAdmin && (
+    <Link href="/admin" className="btn-main">
+      <span>Super Admin Panel</span>
+    </Link>
+  ) 
+```
+
+Inside, this hook checks the Clerk's metadata and sees if the user has the superAdmin:totalAccess permission
+or if you have isSuperAdmin: true
+
+IMPORTANT: To create a new super admin on the platform, you must edit the metadata of the organization or the desired user directly in cler as explained on the installation page

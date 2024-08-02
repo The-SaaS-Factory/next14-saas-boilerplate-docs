@@ -1,0 +1,111 @@
+ ## How to make a CRUD in 20 minutes
+ One of the things we like most about the boilerplate and what saves us the most time is the **newForm** component. In this guide we are going to see how to implement it to make a crud in 20 minutes maximum.
+ 
+### CRUD of a membership plan - EXAMPLE
+The path where we have the crud frontend files is in
+
+src/app/[locale]/(superAdmin)/admin/(billingModule)/billing/plans/plans
+
+![enter image description here](https://ik.imagekit.io/cluzstudio/01-cluzstudio/image_qUWDtYOwL.png?updatedAt=1714488855515)
+#### List
+In the UI folder we have a component that lists the plans
+```js 
+    const BillingPlansList = async () => {
+     const { data } = await getAllPlans(); //getAllPlans is a server action
+```
+We import this component in the page.tsx of our route folder
+#### Create
+To create and update we will use a single **UpsertPlan** file located in the UI folder since we are going to use it in /add and /edit two paths and two different files
+
+```js 
+import NewForm, { Field } from "@/components/core/NewForm";
+import { upsertPlan } from "@/actions/superAdmin/superAdminBillingModule/upsert-plan";
+
+const UpsertPlan = ({ planId, values }: { planId?: number; values?: any }) => {
+  const formInfo = {
+    name: "Create Plan",
+    description: "Create a new plan for your organization",
+  };
+
+  const fields: Field[] = [
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      hasLanguageSupport: true,
+      required: true,
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      required: true,
+      options: [
+        {
+          optionName: "Active",
+          optionValue: "ACTIVE",
+        },
+        {
+          optionName: "Inactive",
+          optionValue: "INACTIVE",
+        },
+      ],
+    },
+    {
+      name: "description",
+      label: "Description",
+      type: "textarea",
+      required: true,
+      hasLanguageSupport: true,
+    },
+  ];
+
+  return (
+    <>
+      <NewForm
+        values={values ?? []}
+        info={formInfo}
+        fields={fields}
+        modelToUpdate={planId}
+        onSubmit={upsertPlan}
+      />
+    </>
+  );
+};
+
+export default UpsertPlan;
+```
+ planId, values:  They are injected into the UpsertPlan component when it is called on the edit page. These two variables tell newForm what to update and to set the form fields to the existing values.
+
+#### Edit
+In page.tsx of /edit/[id]
+
+```js
+const SuperAdminBillingModuleEditPlanPage = async ({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) => {
+  const plan = await getPlanDetails(Number(params.id));
+  const capabilities = await getAllCapabilities();
+
+  return (
+    <div>
+      <PageName name={"Edit Plan"} isSubPage={true} />
+      <Suspense fallback={<TableLoaderSkeleton count={10} />}>
+        <UpsertPlan planId={Number(params.id)} values={plan} />
+        <UpsertPlanCapabilities planOnEdit={plan} capabilities={capabilities} />
+        {plan && (
+          <div className="mb-20">
+            <PlanPricingSection plan={plan} pricings={plan?.pricing ?? []} />
+          </div>
+        )}
+      </Suspense>
+    </div>
+  );
+};
+```
+We obtain the plan id from the url, obtain the data and pass it to UpsertPlan
+

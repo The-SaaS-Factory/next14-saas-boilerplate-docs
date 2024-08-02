@@ -1,0 +1,140 @@
+## Billing and Subscriptions
+Our boilerplate allows the purchase of membership plans for both organizations and personal profiles. It depends on the architecture you are following in your business model. However, the most common thing is that you work on your SaaS at the level of organizations / teams.
+
+In this guide we explain how it works
+
+### Plans and capabilities
+We created a system where from the SuperAdmin panel you can create plans and capabilities (which you should associate with the plans according to your business model).
+
+These capabilities are of two types:
+Permission and Limit. For example, Limit the number of Licenses of certain software that we have available in the SaaS (Limit), or not allow the Basic plan to access a certain page available only to organizations with the most expensive plan (Permissions)
+![](https://ik.imagekit.io/cluzstudio/saasfactory/image_qxSRoCH3CV.png?updatedAt=1714734078383)
+
+### Tenant purchasing a plan
+In this path:
+src/app/[locale]/(admin)/home/settings/billing/buyPlan
+The page showing the plans available for our tenants (Organizations) is rendered.
+![](https://ik.imagekit.io/cluzstudio/saasfactory/image_bWvh5Gf37.png?updatedAt=1714734395760)
+
+```js
+  const { data: payments } = await getPaymentSettings();
+  const { data: plans } = await getAllPlans();
+  const currencies = await getAllCurrencies();
+  const paymentMethods = await getPaymentMethods();
+```
+
+With these server actions we obtain everything necessary to display the page with the available plans, our currencies defined in the administrative settings and the payment methods
+#### Connect our plans with Stripe
+For Stripe to recognize prices and plans, we need to connect the plan via API to Stripe and then connect each price we create for that plan. For example, Plan A can have 2 prices... $5 monthly and $20 annually
+![](https://ik.imagekit.io/cluzstudio/image_JN9SsRV_s.png?updatedAt=1714994320618)
+
+#### Shopping with Stripe
+If we have in the administrative settings in the super admin panel, Stripe activated and added in the payment methods. The user will be presented with the Pay With Stripe option when they click on Buy Plan
+This is where our custom hook usePaymentMethod comes into the picture.
+
+usePaymentMethod export payWithStripe to which we must pass as a parameter the payment method (Invoice) or (Plan).. Since we can also use this method to pay other types of invoices... In this case we pass PLAN and pass the ID of the price that is selected in plan options
+```js
+ const handleSelectPaymentMethod = (paymentMethod: any) => {
+    if (paymentMethod.name === "Stripe") {
+      payWithStripe("PLAN", pricingSelected.id);
+    }
+```
+This in turn will execute the method
+```js
+await createStripeCkeckoutSubscription({
+   currencyId: currencyId,
+   priceId: modelId,
+   paymentMethodName: "Stripe",
+});
+```
+Which first creates a payment invoice for that membership plan purchase
+```js
+  const createStripeCkeckoutSubscription = async (payload: PlanInvoiceType) => {
+    let invoiceId = null;
+
+    await createPlanInvoice({
+      payload,
+    })
+      .then((data) => {
+        invoiceId = data.id;
+      })
+      .catch((error) => {
+        toast.error(error.message);
+        return null;
+      });
+
+    if (!invoiceId) {
+      toast.error("Error creating invoice");
+      return;
+    }
+
+    await createCheckoutSession(invoiceId, "PLAN")
+      .then((data) => {
+        window.location.href = data.url as string;
+      })
+      .catch((error) => {
+        toast.error(error.message);
+        return null;
+      });
+  };
+```
+Which will return the checkout url to the user where they must process the payment with Stripe
+#### Processing payment
+Once the user pays correctly. Stripe sends us a webhook (We must first create the webhook in the Stripe panel and place its secret in our integration panel in the super admin settings)
+The route where we receive it is /en/api/stripe
+There we pass the request to the stripeFacade where we have all the methods that involve Stripe
+
+```js
+ case "invoice.paid":
+        await stripeEventInvoicePaid(eventData); //Second
+        break;
+      case "payment_intent.payment_failed":
+        await stripeEventPaymentFailed(eventData);
+        break;
+      case "checkout.session.completed":
+        await stripeEventCheckoutCompleted(eventData); //First
+        break;
+```
+
+```js
+export const stripeEventCheckoutCompleted = async (eventData) => {
+  try {
+    const invoiceId = eventData.client_reference_id;
+
+    if (invoiceId) {
+      const invoice = await prisma.invoice.findUnique({
+        where: { id: Number(invoiceId) },
+        include: { Items: true, Currency: true },
+      });
+
+      if (!invoice) throw new Error("Invoice not found");
+
+      const payload = {
+        gateway: "stripe",
+        invoicePdfUrl: eventData.invoice_pdf,
+        gatewayId: eventData.id,
+        invoiceUrl: eventData.hosted_invoice_url,
+        subscriptionExternalId: eventData.subscription,
+      };
+
+      await updateInvoice(invoice.id, payload);
+
+      //**************************************************************MAIN************************************************** */
+      Promise.all(
+        invoice.Items.map(async (item: any) => {
+          if (item.pricingId) {
+            const pricing = await getPricingByStripePricingId(item.pricingId);
+            await processInvoiceItemInPayment(item, invoice, pricing);
+          } else {
+            await processInvoiceItemInPayment(item, invoice);
+          }
+        })
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+```
+
+First we update the invoice status and then process each Billable Item (With this structure we can process several billable items at the same time)

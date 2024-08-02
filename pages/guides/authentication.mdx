@@ -1,0 +1,35 @@
+ 
+
+## Auth Provider 
+We use clerk as an authentication provider, due to its versatility, functionality and practicality. You can learn more about clerk here [https://clerk.com/](https://clerk.com/)
+ 
+## Authentication flow
+![enter image description here](https://ik.imagekit.io/cluzstudio/saasfactory/clerk%201_w3G0rnLHb?updatedAt=1714474418006)
+ 
+
+ 1. The user logs in from the landing page or because the route is
+    protected
+ 2.   Clerk authenticates the user according to social providers or other login methods previously configured in clerk
+ 3. Clerk sends a webhook to the endpoint that we configure in Clerk with the registered user's information.
+ 4. We save the information in a new row and link it to Clerk through the externalId column in the users table
+
+## Authentication flow in the backend
+Now, the user is logged in to the browser. All good, now how do we recognize the user in the servers actions (Our backend) ?
+```js
+"user server";
+export const SomeAction = async () => {
+  ...
+  const userClerk = auth();
+  const { userId } = await getUser(userClerk);
+  ...
+}
+```
+
+
+That is, we obtain the instance of the connected Clerk user and send it to the getUser method. What this method does is that it searches our User Table for the first record with the externalId of the clerk instance and returns several things from that instance. user in our database as the userId
+
+## Authenticating Organization or Personal Profile?
+Our boilerplate looks at either an organization or a user. If a user registers for the first time, the webhook is sent and we save it in the user table with the extarnal ID. If that same user creates an organization, the same webhook is sent and we save another record in our user table with the externalId of that organization...
+
+Now, the Clerk instance that we send to our getUser method, when the user has an organization selected in the browser, has both the information of the organization and that of the personal user... Therefore, we first search in the user table if There is a record with the organization ID, otherwise with the personal profile ID. This way we keep everything isolated,
+![enter image description here](https://ik.imagekit.io/cluzstudio/saasfactory/clerk%202_fcuvmIGTy?updatedAt=1714480452614)

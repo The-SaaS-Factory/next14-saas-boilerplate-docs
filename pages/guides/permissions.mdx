@@ -1,0 +1,53 @@
+
+ 
+## Types of roles
+  
+We have two types of roles:
+1- General roles:
+
+ - SuperAdmin: Owner and maximum administrator of the SaaS
+ - Admin: A tenant, a user who manages an organization
+ - User: A user of our Administrators users, this role may not apply
+
+2- Admin roles: At the tenant level (Admin), the software that we are going to offer as a service has its own roles. For example, Administrator, Billing, support... This depends on the solution we are offering to them.
+
+## Protecting at the tenant level
+Here we freely use the clerk system
+
+ [Clerk Docs - Roles and permissions](https://clerk.com/docs/organizations/roles-permissions)
+
+## Protecting our Super Admin dashboard
+The super admin routes are in /admin
+  For a user to have access to these routes, we must manually add the following to the public metadata of the user or organization in clerk:
+```json
+{
+ "isSuperAdmin": true,
+ "permissions": [
+ "superAdmin:totalAccess"
+],
+}
+````
+
+### Our own Permit system
+These permissions are not the same ones that we use for the instance of the software that we provide to the Admins... These permissions are only for the SuperAdmin.. And for this we have a Permission Table which we associate with the User table.
+
+When we place permissions in the user's metadata in clerk, through the webhook that user is linked to the permissions of our database
+
+And therefore, in any server action we can check if the authenticated user has that permission
+
+### Authorizing users in superAdmin
+```js
+"use server";
+const scope = "superAdmin:billing:upsert";
+export const deletePlan = async (modelId: number) => {
+  const userClerk = auth();
+  if (!userClerk) throw new Error("client clerk not found");
+  const { permissions } = await getUser(userClerk);
+
+  checkPermission(permissions, scope);
+...
+```
+
+checkPermission checks the permissions in the metadata of the clerk instance against the associated permissions in the database for that user
+
+If you don't have permission, we return 403.
